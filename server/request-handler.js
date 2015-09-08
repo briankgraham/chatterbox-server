@@ -11,8 +11,10 @@ this file and include it in basic-server.js so that it actually works.
 *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html.
 
 **************************************************************/
+var results = [];
+var stubs = require('./spec/Stubs.js');
 
-module.exports = function(request, response) {
+var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
   //
   // They include information about both the incoming request, such as
@@ -34,21 +36,71 @@ module.exports = function(request, response) {
 
   // See the note below about CORS headers.
   var headers = defaultCorsHeaders;
-
+ 
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = "application/json";
-  if (request.method === 'GET' && request.url === '/log') {
-    response.writeHead(statusCode, headers);  
+  if (request.method === 'GET') {
+    if ((/classes/).test(request.url)) {
+      response.writeHead(200, headers);
+      response.end(JSON.stringify({
+        results: results
+
+      }));
+    }
+    
   }
-  if (request.method === 'POST' && request.url === '/classes/messages') {
+
+  if (request.method === 'POST') {
+    var str = '';
+    request.on('data', function (chunk) {
+      str+=chunk;
+    });
+    request.on('end', function () {
+      results.push(JSON.parse(str));
+      response.end();
+    });
     response.writeHead(201, headers);
-  } 
-  else {
-    response.writeHead(statusCode, headers);  
+  } else {
+    response.writeHead(200, headers);
+    response.end();
   }
+  // if (request.url === '/classes/room') {
+  //   if (request.method === 'GET') {
+      
+  //       response.writeHead(200, headers);
+  //       response.end(JSON.stringify({
+  //         results: results
+  //       }));
+      
+  //       response.writeHead(200);
+  //       response.end(JSON.stringify({
+  //         results: results
+  //       }));
+      
+      
+  //   }
+
+  //   if (request.method === 'POST') {
+  //     var str = '';
+  //     request.on('data', function (chunk) {
+  //       str+=chunk;
+  //     });
+  //     request.on('end', function () {
+  //       results.push(JSON.parse(str));
+  //       response.end();
+  //     });
+  //     response.writeHead(201, headers);
+  //   } else {
+  //     response.writeHead(404, headers);
+  //     response.end();
+  //   }
+  // }
+
+
+
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   //response.writeHead(statusCode, headers);
@@ -61,9 +113,9 @@ module.exports = function(request, response) {
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
 
-  response.end();
+  //response.end();
 };
-
+exports.requestHandler = requestHandler;
 // These headers will allow Cross-Origin Resource Sharing (CORS).
 // This code allows this server to talk to websites that
 // are on different domains, for instance, your chat client.
