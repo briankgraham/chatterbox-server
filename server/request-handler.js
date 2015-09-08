@@ -23,7 +23,7 @@ var requestHandler = function(request, response) {
   //
   // Documentation for both request and response can be found in the HTTP section at
   // http://nodejs.org/documentation/api/
-
+  var urlArr = (request.url).split('/');
   // Do some basic logging.
   //
   // Adding more logging to your server can be an easy way to get passive
@@ -43,15 +43,10 @@ var requestHandler = function(request, response) {
   // other than plain text, like JSON or HTML.
   headers['Content-Type'] = "application/json";
   if (request.method === 'GET') {
-    if ((/classes/).test(request.url)) {
-      response.writeHead(200, headers);
-      response.end(JSON.stringify({
-        results: results
-
-      }));
-    }
     
-  }
+    response.writeHead(200, headers);
+    
+  } 
 
   if (request.method === 'POST') {
     var str = '';
@@ -60,46 +55,13 @@ var requestHandler = function(request, response) {
     });
     request.on('end', function () {
       results.push(JSON.parse(str));
-      response.end();
+      //response.end();
     });
     response.writeHead(201, headers);
   } else {
-    response.writeHead(200, headers);
-    response.end();
+    response.writeHead(404, headers);
+    //response.end();
   }
-  // if (request.url === '/classes/room') {
-  //   if (request.method === 'GET') {
-      
-  //       response.writeHead(200, headers);
-  //       response.end(JSON.stringify({
-  //         results: results
-  //       }));
-      
-  //       response.writeHead(200);
-  //       response.end(JSON.stringify({
-  //         results: results
-  //       }));
-      
-      
-  //   }
-
-  //   if (request.method === 'POST') {
-  //     var str = '';
-  //     request.on('data', function (chunk) {
-  //       str+=chunk;
-  //     });
-  //     request.on('end', function () {
-  //       results.push(JSON.parse(str));
-  //       response.end();
-  //     });
-  //     response.writeHead(201, headers);
-  //   } else {
-  //     response.writeHead(404, headers);
-  //     response.end();
-  //   }
-  // }
-
-
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
@@ -112,7 +74,9 @@ var requestHandler = function(request, response) {
   //
   // Calling .end "flushes" the response's internal buffer, forcing
   // node to actually send all the data over to the client.
-
+  response.end(JSON.stringify({
+    results: results
+  }));
   //response.end();
 };
 exports.requestHandler = requestHandler;
